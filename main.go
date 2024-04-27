@@ -7,10 +7,10 @@ import (
 
 var (
 	version = "dev"
-	logger  = log.NewLogger()
+	logger  = log.NewLogger(true)
 )
 
 func main() {
-	logger.Infof("Starting StarScanner (Version: %s)", version)
+	logger.Debugf("Starting StarScanner (Version: %s)", version)
 	command.Main(version)
 }
