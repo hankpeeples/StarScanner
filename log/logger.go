@@ -17,10 +17,8 @@ type LoggerImpl struct {
 type LogLevel int
 
 const (
-	DATE_FORMAT = "2020-11-03"
-	TIME_FORMAT = "15:04:00 AM"
-	PREFIX      = "●"
-	LOG_PRINT   = iota
+	PREFIX    = "●"
+	LOG_PRINT = iota
 	LOG_FATAL
 	LOG_ERROR
 	LOG_WARN
@@ -60,7 +58,7 @@ func (l *LoggerImpl) Infof(msg string, v ...interface{}) {
 	l.writeLog(levelNames[LOG_INFO], msg, v...)
 }
 
-func (l *LoggerImpl) Infoln(msg string) {
+func (l *LoggerImpl) Infoln(msg string, v ...interface{}) {
 	l.writeLog(levelNames[LOG_INFO], msg)
 }
 
@@ -72,7 +70,7 @@ func (l *LoggerImpl) Warnf(msg string, v ...interface{}) {
 }
 
 func (l *LoggerImpl) Warnln(msg string) {
-	l.writeLog(levelNames[LOG_INFO], msg)
+	l.writeLog(levelNames[LOG_WARN], msg)
 }
 
 // ------------------- Warn -------------------------
@@ -83,10 +81,22 @@ func (l *LoggerImpl) Errorf(msg string, v ...interface{}) {
 }
 
 func (l *LoggerImpl) Errorln(msg string) {
-	l.writeLog(levelNames[LOG_INFO], msg)
+	l.writeLog(levelNames[LOG_ERROR], msg)
 }
 
 // ------------------- Error -------------------------
+
+// ------------------- Fatal ------------------------
+
+func (l *LoggerImpl) Fatalf(msg string, v ...interface{}) {
+	l.writeLog(levelNames[LOG_FATAL], msg, v...)
+}
+
+func (l *LoggerImpl) Fatalln(msg string) {
+	l.writeLog(levelNames[LOG_FATAL], msg)
+}
+
+// ------------------- Fatal -------------------------
 // ------------------- Debug ------------------------
 
 func (l *LoggerImpl) Debugf(msg string, v ...interface{}) {
@@ -94,22 +104,27 @@ func (l *LoggerImpl) Debugf(msg string, v ...interface{}) {
 }
 
 func (l *LoggerImpl) Debugln(msg string) {
-	l.writeLog(levelNames[LOG_INFO], msg)
+	l.writeLog(levelNames[LOG_DEBUG], msg)
 }
 
 // ------------------- Debug -------------------------
 
 func (l *LoggerImpl) writeLog(level string, msg string, v ...interface{}) {
 	outStr := fmt.Sprintf(msg, v...)
+	format := "03:04:05.006 PM"
 	var out string
 	var curTime time.Time
 
 	if l.debug {
 		curTime = time.Now()
-		out = fmt.Sprintf("%s %s %s %v", curTime.Format(DATE_FORMAT), curTime.Format(TIME_FORMAT), level, outStr)
+		out = fmt.Sprintf("%s %s %v", curTime.Format(format), level, outStr)
 	} else {
 		out = fmt.Sprintf("%s %v", level, outStr)
 	}
 
 	fmt.Println(out)
+
+	if level == levelNames[LOG_FATAL] {
+		os.Exit(0)
+	}
 }

@@ -1,16 +1,9 @@
 package main
 
 import (
-	"starscanner/command"
-	"starscanner/log"
-)
-
-var (
-	version = "dev"
-	logger  = log.NewLogger(true)
+	"starscanner/cmd"
 )
 
 func main() {
-	logger.Debugf("Starting StarScanner (Version: %s)", version)
-	command.Main(version)
+	cmd.Execute()
 }
