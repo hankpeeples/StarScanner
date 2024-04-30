@@ -1,15 +1,13 @@
 package cmd
 
 import (
-	"os"
 	"starscanner/log"
 
-	"github.com/joho/godotenv"
 	"github.com/spf13/cobra"
 )
 
 var (
-	logger  = log.NewLogger(true)
+	logger  = log.NewLogger()
 	rootCmd = &cobra.Command{
 		Use:     "sscan",
 		Short:   "Easy-to-use network scanner written in Go.",
@@ -18,17 +16,6 @@ var (
 )
 
 func Execute() {
-	// load .env file
-	err := godotenv.Load()
-	if err != nil {
-		logger.Fatalln("Error loading .env file")
-	}
-
-	// grab expected .env and environment variables
-	_, isDebug := os.LookupEnv("DEBUG")
-
-	logger.Debugf("Starting StarScanner (Debug: %v)", isDebug)
-
 	if err := rootCmd.Execute(); err != nil {
 		panic(err)
 	}

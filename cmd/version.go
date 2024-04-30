@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 )
 
@@ -12,6 +13,7 @@ var versionCmd = &cobra.Command{
 	Use:   "version",
 	Short: "Print the version",
 	Run: func(cmd *cobra.Command, args []string) {
-		logger.Printf("Version: %s", rootCmd.Version)
+		boldGreen := color.New(color.FgHiMagenta, color.Bold).SprintFunc()
+		logger.Infof("You are running version: %s\n", boldGreen(rootCmd.Version))
 	},
 }

@@ -4,14 +4,16 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/fatih/color"
+	"github.com/joho/godotenv"
 )
 
 type LoggerImpl struct {
 	*log.Logger
-	debug bool
+	debug string
 }
 
 type LogLevel int
@@ -35,7 +37,15 @@ var levelNames = map[LogLevel]string{
 	LOG_DEBUG: color.BlueString(PREFIX),
 }
 
-func NewLogger(isDebug bool) *LoggerImpl {
+func NewLogger() *LoggerImpl {
+	// load .env file
+	err := godotenv.Load()
+	if err != nil {
+		panic(err)
+	}
+
+	// grab expected .env and environment variables
+	isDebug := os.Getenv("DEBUG")
 	logger := &LoggerImpl{Logger: log.New(os.Stdout, "", log.Lshortfile), debug: isDebug}
 
 	return logger
@@ -100,10 +110,16 @@ func (l *LoggerImpl) Fatalln(msg string) {
 // ------------------- Debug ------------------------
 
 func (l *LoggerImpl) Debugf(msg string, v ...interface{}) {
+	if strings.ToLower(l.debug) == "true" {
+		return
+	}
 	l.writeLog(levelNames[LOG_DEBUG], msg, v...)
 }
 
 func (l *LoggerImpl) Debugln(msg string) {
+	if strings.ToLower(l.debug) == "true" {
+		return
+	}
 	l.writeLog(levelNames[LOG_DEBUG], msg)
 }
 
@@ -111,11 +127,11 @@ func (l *LoggerImpl) Debugln(msg string) {
 
 func (l *LoggerImpl) writeLog(level string, msg string, v ...interface{}) {
 	outStr := fmt.Sprintf(msg, v...)
-	format := "03:04:05.006 PM"
+	format := "03:04:05 PM"
 	var out string
 	var curTime time.Time
 
-	if l.debug {
+	if strings.ToLower(l.debug) == "true" {
 		curTime = time.Now()
 		out = fmt.Sprintf("%s %s %v", curTime.Format(format), level, outStr)
 	} else {
