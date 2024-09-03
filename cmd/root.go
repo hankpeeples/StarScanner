@@ -1,13 +1,13 @@
 package cmd
 
 import (
-	"starscanner/log"
+	logger "starscanner/log"
 
 	"github.com/spf13/cobra"
 )
 
 var (
-	logger  = log.NewLogger()
+	log     = logger.NewLogger()
 	rootCmd = &cobra.Command{
 		Use:     "sscan",
 		Short:   "Easy-to-use network scanner written in Go.",
@@ -17,6 +17,6 @@ var (
 
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
-		panic(err)
+		log.Fatalf("Error: %v", err)
 	}
 }

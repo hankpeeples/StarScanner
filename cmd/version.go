@@ -14,6 +14,6 @@ var versionCmd = &cobra.Command{
 	Short: "Print the version",
 	Run: func(cmd *cobra.Command, args []string) {
 		boldGreen := color.New(color.FgHiMagenta, color.Bold).SprintFunc()
-		logger.Infof("You are running version: %s\n", boldGreen(rootCmd.Version))
+		log.Infof("You are running version: %s\n", boldGreen(rootCmd.Version))
 	},
 }

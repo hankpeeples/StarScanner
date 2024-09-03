@@ -1,146 +1,54 @@
 package log
 
 import (
-	"fmt"
-	"log"
 	"os"
-	"strings"
 	"time"
 
-	"github.com/fatih/color"
-	"github.com/joho/godotenv"
+	charmLog "github.com/charmbracelet/log"
 )
-
-type LoggerImpl struct {
-	*log.Logger
-	debug string
-}
-
-type LogLevel int
 
 const (
-	PREFIX    = "●"
-	LOG_PRINT = iota
-	LOG_FATAL
-	LOG_ERROR
-	LOG_WARN
-	LOG_INFO
-	LOG_DEBUG
+	level  = "debug"
+	output = "console"
 )
 
-var levelNames = map[LogLevel]string{
-	LOG_PRINT: color.WhiteString(PREFIX),
-	LOG_FATAL: color.HiRedString(PREFIX),
-	LOG_ERROR: color.RedString(PREFIX),
-	LOG_WARN:  color.YellowString(PREFIX),
-	LOG_INFO:  color.GreenString(PREFIX),
-	LOG_DEBUG: color.BlueString(PREFIX),
-}
+// NewLogger creates a new logger
+func NewLogger() *charmLog.Logger {
+	var logLevel charmLog.Level
 
-func NewLogger() *LoggerImpl {
-	// load .env file
-	err := godotenv.Load()
-	if err != nil {
-		panic(err)
+	switch level {
+	case "debug":
+		logLevel = charmLog.DebugLevel
+	case "info":
+		logLevel = charmLog.InfoLevel
+	case "warn":
+		logLevel = charmLog.WarnLevel
+	case "error":
+		logLevel = charmLog.ErrorLevel
+	case "fatal":
+		logLevel = charmLog.FatalLevel
+	default:
+		logLevel = charmLog.InfoLevel
 	}
 
-	// grab expected .env and environment variables
-	isDebug := os.Getenv("DEBUG")
-	logger := &LoggerImpl{Logger: log.New(os.Stdout, "", log.Lshortfile), debug: isDebug}
+	if output == "file" {
+		file, err := os.OpenFile("LogManager.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0o644)
+		if err != nil {
+			panic(err)
+		}
 
-	return logger
-}
-
-// ------------------- Print -----------------------
-
-func (l *LoggerImpl) Printf(msg string, v ...interface{}) {
-	l.writeLog(levelNames[LOG_PRINT], msg, v...)
-}
-
-func (l *LoggerImpl) Println(msg string) {
-	l.writeLog(levelNames[LOG_PRINT], msg)
-}
-
-// ------------------- Print -----------------------
-// ------------------- Info ------------------------
-
-func (l *LoggerImpl) Infof(msg string, v ...interface{}) {
-	l.writeLog(levelNames[LOG_INFO], msg, v...)
-}
-
-func (l *LoggerImpl) Infoln(msg string, v ...interface{}) {
-	l.writeLog(levelNames[LOG_INFO], msg)
-}
-
-// ------------------- Info ------------------------
-// ------------------- Warn ------------------------
-
-func (l *LoggerImpl) Warnf(msg string, v ...interface{}) {
-	l.writeLog(levelNames[LOG_WARN], msg, v...)
-}
-
-func (l *LoggerImpl) Warnln(msg string) {
-	l.writeLog(levelNames[LOG_WARN], msg)
-}
-
-// ------------------- Warn -------------------------
-// ------------------- Error ------------------------
-
-func (l *LoggerImpl) Errorf(msg string, v ...interface{}) {
-	l.writeLog(levelNames[LOG_ERROR], msg, v...)
-}
-
-func (l *LoggerImpl) Errorln(msg string) {
-	l.writeLog(levelNames[LOG_ERROR], msg)
-}
-
-// ------------------- Error -------------------------
-
-// ------------------- Fatal ------------------------
-
-func (l *LoggerImpl) Fatalf(msg string, v ...interface{}) {
-	l.writeLog(levelNames[LOG_FATAL], msg, v...)
-}
-
-func (l *LoggerImpl) Fatalln(msg string) {
-	l.writeLog(levelNames[LOG_FATAL], msg)
-}
-
-// ------------------- Fatal -------------------------
-// ------------------- Debug ------------------------
-
-func (l *LoggerImpl) Debugf(msg string, v ...interface{}) {
-	if strings.ToLower(l.debug) == "true" {
-		return
-	}
-	l.writeLog(levelNames[LOG_DEBUG], msg, v...)
-}
-
-func (l *LoggerImpl) Debugln(msg string) {
-	if strings.ToLower(l.debug) == "true" {
-		return
-	}
-	l.writeLog(levelNames[LOG_DEBUG], msg)
-}
-
-// ------------------- Debug -------------------------
-
-func (l *LoggerImpl) writeLog(level string, msg string, v ...interface{}) {
-	outStr := fmt.Sprintf(msg, v...)
-	format := "03:04:05 PM"
-	var out string
-	var curTime time.Time
-
-	if strings.ToLower(l.debug) == "true" {
-		curTime = time.Now()
-		out = fmt.Sprintf("%s %s %v", curTime.Format(format), level, outStr)
-	} else {
-		out = fmt.Sprintf("%s %v", level, outStr)
+		return charmLog.NewWithOptions(file, charmLog.Options{
+			Level:           logLevel,
+			ReportCaller:    false,
+			ReportTimestamp: true,
+			TimeFormat:      time.DateTime,
+		})
 	}
 
-	fmt.Println(out)
-
-	if level == levelNames[LOG_FATAL] {
-		os.Exit(0)
-	}
+	return charmLog.NewWithOptions(os.Stdout, charmLog.Options{
+		Level:           logLevel,
+		ReportCaller:    false,
+		ReportTimestamp: true,
+		TimeFormat:      "15:04:05.0000",
+	})
 }
